@@ -1,27 +1,41 @@
 <?php 
-// Copyright (c) 2012 Remy van Elst
-// Permission is hereby granted, free of charge, to any person obtaining a copy
-// of this software and associated documentation files (the "Software"), to deal
-// in the Software without restriction, including without limitation the rights
-// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-// copies of the Software, and to permit persons to whom the Software is
-// furnished to do so, subject to the following conditions:
-
-// The above copyright notice and this permission notice shall be included in
-// all copies or substantial portions of the Software.
-
-// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-// THE SOFTWARE.
 
 ?>
 
 
 </div><!-- div wrap -->
+<script>
+    var picker = new Pikaday({
+        field: document.getElementById('datepicker'),
+        format: 'M-D-YYYY',
+        toString(date, format) {
+            // you should do formatting based on the passed format,
+            // but we will just return 'D/M/YYYY' for simplicity
+            const day = date.getDate();
+            const month = date.getMonth() + 1;
+            const year = date.getFullYear();
+            return `${day}/${month}/${year}`;
+        },
+        parse(dateString, format) {
+            // dateString is the result of `toString` method
+            const parts = dateString.split('/');
+            const day = parseInt(parts[0], 10);
+            const month = parseInt(parts[1], 10) - 1;
+            const year = parseInt(parts[2], 10);
+            return new Date(year, month, day);
+        },
+        firstDay:1,
+        i18n: {
+            previousMonth : 'Prethodni mjesec',
+            nextMonth     : 'Naredni mjesec',
+            months        : ['Januar','Februar','Mart','April','Maj','Jun','Jul','Avgust','Septembar','Oktobar','Novembar','Decembar'],
+            weekdays      : ['Nedelja','Ponedeljak','Utorak','Srijeda','Četvrtak','Petak','Subota'],
+            weekdaysShort : ['Ned','Pon','Uto','Sri','Čet','Pet','Sub']
+        },
+     });
+</script>
 
 </div>
-</body></html>
+</body>
+<script type="text/javascript" src="js/script.js"></script>                                  
+</html>

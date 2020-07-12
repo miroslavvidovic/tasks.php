@@ -1,30 +1,12 @@
 <?php
 /*
-#Copyright (c) 2012 Remy van Elst
-#Permission is hereby granted, free of charge, to any person obtaining a copy
-#of this software and associated documentation files (the "Software"), to deal
-#in the Software without restriction, including without limitation the rights
-#to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-#copies of the Software, and to permit persons to whom the Software is
-#furnished to do so, subject to the following conditions:
-#
-#The above copyright notice and this permission notice shall be included in
-#all copies or substantial portions of the Software.
-#
-#THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-#IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-#FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-#AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-#LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-#OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-#THE SOFTWARE.
 */
 
 $projectname="Tasks";
 $projectversion = "v0.0.3";
 
 $LANG=NULL;
-require('language.en.php');
+require('language.rs.php');
 
 
 $file="task.json";
@@ -43,6 +25,7 @@ function showinputform($actionpage) {
     echo "<table class=\"striped\">";
     echo "<tr>";
     echo "<th><center>".$LANG["task"]."</center></th>";
+    echo "<th><center>".$LANG["user"]."</center</th>";
     echo "<th>".$LANG["priority"]."</th>";
     echo "<th>".$LANG["duedate"]."</th>";
     echo "<th></th>";
@@ -50,7 +33,9 @@ function showinputform($actionpage) {
     echo "<tr>";
     echo "<td>";
     echo "<form name=\"edit\" action=\"action.php\" method=\"GET\">";
-    echo "<input name=\"task\" size=40 type=\"text\" placeholder=\"".$LANG["tasktodo"]."\" ></input>";
+    echo "<input name=\"task\" size=80 type=\"text\" placeholder=\"".$LANG["tasktodo"]."\" ></input>";
+    echo "</td><td>";
+    echo "<input name=\"user\" size=25 type=\"text\" placeholder=\"".$LANG["user"]."\" ></input>";
     echo "</td><td>";
     echo "<select name=\"prio\">\n";
         echo "<option value=\"2\">".$LANG["normal"]."</option>\n";
@@ -59,7 +44,7 @@ function showinputform($actionpage) {
         echo "<option value=\"4\">".$LANG["onhold"]."</option>\n";
         echo "</select>\n";
     echo "</td><td>";
-    echo "<input name=\"duedate\" type=\"text\" value=\"${vandaag}\"></input>\n";
+    echo "<input name=\"duedate\" id=\"datepicker\" type=\"text\" value=\"${vandaag}\" readonly></input>\n";
     echo "</td><td>";
     echo "<input type=\"hidden\" name=\"action\" value=\"add\"></input>";
     echo "<input name=\"dateadded\" type=\"hidden\" value=\"${vandaag}\"></input>\n";
@@ -76,16 +61,12 @@ function array_sort_by_column(&$arr, $col, $dir = SORT_ASC) {
     array_multisort($sort_col, $dir, $arr);
 }
 
-# via http://richardathome.wordpress.com/2006/03/28/php-function-to-return-the-number-of-days-between-two-dates/
 function dateDiff($start, $end) {
     $start_ts = strtotime($start);
     $end_ts = strtotime($end);
     $diff = $end_ts - $start_ts;
     return round($diff / 86400);
 }
-
-
-
 
 function listtasks($json_a,$taskstatus,$outputformat) {
     global $LANG;
@@ -98,15 +79,14 @@ function listtasks($json_a,$taskstatus,$outputformat) {
         echo "<thead>";
         echo "<tr>";
         echo "<th>".$LANG["priority"]."</th>";
+        echo "<th>".$LANG["user"]."</th>";
         echo "<th>".$LANG["task"]."</th>";
         echo "<th>".$LANG["daysopen"]."</th>";
         echo "<th>".$LANG["duedate"]."</th>";
-
         echo "<th> </th>";
         echo "</tr>";
         echo "</thead>";
      
-
     if(is_array($json_a)) {     
         $tasknumber=1;
         $havetasks=NULL;
@@ -137,6 +117,7 @@ function listtasks($json_a,$taskstatus,$outputformat) {
                     echo "</td>";
                     $dayopen = NULL;
                                     #task
+                    echo "<td>".$task['user']."</td>";
                     echo "<td>".$task['task']."</td>";
                     if ($taskstatus == "open") {
                         $dayopen = dateDiff(str_replace('-', '/',$task["dateadded"]),$vandaag);
@@ -168,7 +149,7 @@ function listtasks($json_a,$taskstatus,$outputformat) {
                                 if ($daysclosed < 0) {
                                     $daysclosed = "<u>" .abs($daysclosed) . $LANG["dayslate"] . " (".date('D d M',strtotime(str_replace('-', '/',$taskduedate))).")</u>";
                                 } elseif ($daysclosed == 0) {
-                                    $daysclosed = "<b>".$LANG["today"]." (".date('D d M',strtotime(str_replace('-', '/',$taskduedate))).")</b>";
+                                    $daysclosed = "<b>".$LANG["today"]." (".date('d.m.y',strtotime(str_replace('-', '/',$taskduedate))).")</b>";
 
 
                                 } else {
@@ -178,7 +159,7 @@ function listtasks($json_a,$taskstatus,$outputformat) {
 
                             if ($taskstatus == "closed" || $taskstatus == "deleted") {
 
-                                echo date('D d M',strtotime(str_replace('-', '/',$taskduedate)));
+                                echo date('d.m.y',strtotime(str_replace('-', '/',$taskduedate)));
                             } else {
                                 echo $daysclosed;
                             }
@@ -195,17 +176,23 @@ function listtasks($json_a,$taskstatus,$outputformat) {
                     switch ($taskstatus) {
                         case 'open':
                                             #done
-                        echo "<a href=\"action.php?id=" .$item. "&action=done\"><span class=\"icon small darkgray\" data-icon=\"C\"></span></a>";
+                        echo "<a href=\"action.php?id=" .$item. "&action=done\"><span class=\"icon small green\" data-icon=\"C\"></span></a>";
                                             #edit
                         echo "  ";
                         echo "<a href=\"action.php?id=" .$item. "&action=edit\"><span class=\"icon small darkgray\" data-icon=\"7\"></span></a>";
                                             #delete
                         echo "  ";
-                        echo "<a href=\"action.php?id=" . $item . "&action=delete\"><span class=\"icon small darkgray\" data-icon=\"T\"></span></a>";
+                        echo "<a href=\"action.php?id=" . $item . "&action=delete\"><span class=\"icon small red\" data-icon=\"T\"></span></a>";
                         break;
 
                         case 'closed':
-                        echo "<a href=\"action.php?id=" .$item. "&action=delete\"><span class=\"icon small darkgray\" data-icon=\"T\"></span></a>";
+                        echo "<a href=\"action.php?id=" .$item. "&action=undone\"><span class=\"icon small blue\" data-icon=\"g\"></span></a>";
+                        echo "<a href=\"action.php?id=" .$item. "&action=delete\"><span class=\"icon small red\" data-icon=\"T\"></span></a>";
+                        break;
+
+                        case 'deleted':
+                        echo "<a href=\"action.php?id=" .$item. "&action=undelete\"><span class=\"icon small blue\" data-icon=\"g\"></span></a>";
+                        echo "<a href=\"action.php?id=" .$item. "&action=permdelete\"><span class=\"icon small red\" data-icon=\"F\"></span></a>";
                         break;
                     }                                        
                     echo "</td>";
@@ -232,6 +219,20 @@ function listtasks($json_a,$taskstatus,$outputformat) {
 
 }
 
+function statistics(){
+    echo "<div class=\"col_6\">";
+    echo "<canvas id=\"pie-chart\"> </canvas>";
+    echo "</div> <!-- col_ -->";
+    echo "<div class=\"col_6\">";
+    echo "<canvas id=\"d-chart\"> </canvas>";
+    echo "</div> <!-- col_ -->";
+    echo "<div class=\"col_6\">";
+    echo "<canvas id=\"l-chart\"> </canvas>";
+    echo "</div> <!-- col_ -->";
+    echo "<div class=\"col_6\">";
+    echo "<canvas id=\"l2-chart\"> </canvas>";
+    echo "</div> <!-- col_ -->";
+}
 function redirect($page = "index.php") {
     echo "<script type=\"text/javascript\">";
     echo "window.location = \"$page\" ";
